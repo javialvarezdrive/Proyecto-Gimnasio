@@ -4,8 +4,8 @@ from supabase import create_client
 from modules import auth, members, schedule, reports
 
 def init_supabase():
-    SUPABASE_URL = "TU_SUPABASE_URL_AQUÍ"
-    SUPABASE_KEY = "TU_SUPABASE_KEY_AQUÍ"
+    SUPABASE_URL = "https://anqvjvjpcokkwspaecfc.supabase.co"
+    SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucXZqdmpwY29ra3dzcGFlY2ZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1OTMyMDcsImV4cCI6MjA1NjE2OTIwN30.w4Y6sE8UyIA22pt5QAYQlcsWZceksF4AKF0zm7Jv7Lk"
     return create_client(SUPABASE_URL, SUPABASE_KEY)
 
 def login_page():
