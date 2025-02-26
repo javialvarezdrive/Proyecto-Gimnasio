@@ -1,10 +1,11 @@
+# streamlit_app.py
 import streamlit as st
 import datetime
-from supabase import create_client
+from supabase import create_client # Importar create_client aquí también
 from modules import auth, members, schedule, reports
 
 def init_supabase():
-    # Reemplaza con tus credenciales de Supabase
+    # CREDENCIALES DE SUPABASE HARDCODEADAS (¡NO RECOMENDADO PARA PRODUCCIÓN!)
     SUPABASE_URL = "https://anqvjvjpcokkwspaecfc.supabase.co"
     SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucXZqdmpwY29ra3dzcGFlY2ZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1OTMyMDcsImV4cCI6MjA1NjE2OTIwN30.w4Y6sE8UyIA22pt5QAYQlcsWZceksF4AKF0zm7Jv7Lk"
     return create_client(SUPABASE_URL, SUPABASE_KEY)
@@ -99,7 +100,8 @@ def main():
     if "supabase_client" not in st.session_state:
         client = init_supabase()
         if not client:
-            return  # Se mostrará el error
+            st.error("Error al inicializar Supabase. Revisa las credenciales en el código.") # Mensaje de error más claro
+            return  # Sale de main() si no se inicializa Supabase
         st.session_state.supabase_client = client
 
     if not st.session_state.logged_in:
