@@ -14,14 +14,18 @@ supabase = init_supabase()
 def login_user(username, password):
     try:
         response = supabase.table('monitors').select('*').eq('username', username).execute()
+        # Manejo de errores revisado según la documentación actual de supabase-py
         if response.error:
             st.error(f"Error en la consulta de login: {response.error.message}")
             return None
-        if not response.data:
+
+        data = response.data
+
+        if not data:
             st.warning("Usuario no encontrado.")
             return None
 
-        user = response.data[0]
+        user = data[0]
         hashed_password_db = user['password']
 
         if hashed_password_db and bcrypt.checkpw(password.encode('utf-8'), hashed_password_db.encode('utf-8')):
@@ -32,7 +36,6 @@ def login_user(username, password):
     except Exception as e:
         st.error(f"Error inesperado durante el login: {e}")
         return None
-
 
 def register_user(username, password, nombre, apellidos, email, rol='monitor'): # Rol cambiado a 'monitor' para consistencia con 'monitors' table
     try:
