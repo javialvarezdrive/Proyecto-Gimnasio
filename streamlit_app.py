@@ -4,8 +4,9 @@ from supabase import create_client
 from modules import auth, members, schedule, reports
 
 def init_supabase():
-    SUPABASE_URL = "https://anqvjvjpcokkwspaecfc.supabase.co"
-    SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFucXZqdmpwY29ra3dzcGFlY2ZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1OTMyMDcsImV4cCI6MjA1NjE2OTIwN30.w4Y6sE8UyIA22pt5QAYQlcsWZceksF4AKF0zm7Jv7Lk"
+    # Reemplaza con tus credenciales de Supabase
+    SUPABASE_URL = "TU_SUPABASE_URL"
+    SUPABASE_KEY = "TU_SUPABASE_KEY"
     return create_client(SUPABASE_URL, SUPABASE_KEY)
 
 def login_page():
@@ -18,6 +19,7 @@ def login_page():
             st.session_state.logged_in = True
             st.session_state.monitor = user
             st.success("Bienvenido " + user["username"])
+            st.experimental_rerun()
         else:
             st.error("Credenciales incorrectas")
 
@@ -49,7 +51,7 @@ def schedule_activity_page():
     # Lista de miembros
     member_resp = supabase.table("gym_members").select("*").execute()
     if member_resp.error:
-        st.error("Error al obtener los miembros.")
+        st.error("Error al obtener los miembros: " + member_resp.error.message)
         return
     members_data = member_resp.data
     member_options = {f"{m['nombre']} {m['apellidos']} - {m['nip']}": m["id"] for m in members_data}
@@ -58,7 +60,7 @@ def schedule_activity_page():
     # Lista de actividades
     act_resp = supabase.table("activities").select("*").execute()
     if act_resp.error:
-        st.error("Error al obtener las actividades.")
+        st.error("Error al obtener las actividades: " + act_resp.error.message)
         return
     activities_data = act_resp.data
     activity_options = {act["nombre"]: act["id"] for act in activities_data}
@@ -72,7 +74,7 @@ def schedule_activity_page():
             turno=turno,
             monitor_id=st.session_state.monitor["id"]
         )
-        if result.status_code in (200, 201):
+        if result and result.status_code in (200, 201):
             st.success("Actividad agendada con éxito.")
         else:
             st.error("Error al agendar la actividad.")
@@ -103,12 +105,8 @@ def main():
     if not st.session_state.logged_in:
         login_page()
     else:
-        menu = st.sidebar.radio("Navegación", options=[
-            "Registrar Miembro",
-            "Agendar Actividad",
-            "Reportes",
-            "Cerrar Sesión"
-        ])
+        menu_options = ["Registrar Miembro", "Agendar Actividad", "Reportes", "Cerrar Sesión"]
+        menu = st.sidebar.radio("Navegación", options=menu_options)
         if menu == "Registrar Miembro":
             register_member_page()
         elif menu == "Agendar Actividad":
