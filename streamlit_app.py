@@ -4,12 +4,8 @@ from supabase import create_client
 from modules import auth, members, schedule, reports
 
 def init_supabase():
-    try:
-        SUPABASE_URL = st.secrets["SUPABASE_URL"]
-        SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
-    except KeyError as e:
-        st.error(f"Error en st.secrets, faltan las siguientes claves: {e}")
-        return None
+    SUPABASE_URL = "TU_SUPABASE_URL_AQUÍ"
+    SUPABASE_KEY = "TU_SUPABASE_KEY_AQUÍ"
     return create_client(SUPABASE_URL, SUPABASE_KEY)
 
 def login_page():
@@ -95,7 +91,6 @@ def report_page():
 
 def main():
     st.title("Gestión del Gimnasio")
-    st.write("DEBUG: Contenido de st.secrets", st.secrets)  # Línea temporal para depurar
     if "logged_in" not in st.session_state:
         st.session_state.logged_in = False
 
