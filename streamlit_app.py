@@ -1,38 +1,16 @@
 import streamlit as st
 import datetime
+from supabase import create_client
 from modules import auth, members, schedule, reports
 
-def main():
-    # Línea de depuración: muestra el contenido de st.secrets
-    st.write("Contenido de st.secrets:", st.secrets)
-    
-    # Resto de la lógica de la app...
-    if "logged_in" not in st.session_state:
-        st.session_state.logged_in = False
-    if "supabase_client" not in st.session_state:
-        from supabase import create_client
+def init_supabase():
+    try:
         SUPABASE_URL = st.secrets["SUPABASE_URL"]
         SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
-        st.session_state.supabase_client = create_client(SUPABASE_URL, SUPABASE_KEY)
-
-    if not st.session_state.logged_in:
-        login_page()
-    else:
-        menu = st.sidebar.radio("Navegación", options=[
-            "Registrar Miembro",
-            "Agendar Actividad",
-            "Reportes de Actividades",
-            "Cerrar Sesión"
-        ])
-        if menu == "Registrar Miembro":
-            register_member_page()
-        elif menu == "Agendar Actividad":
-            schedule_activity_page()
-        elif menu == "Reportes de Actividades":
-            report_page()
-        elif menu == "Cerrar Sesión":
-            st.session_state.logged_in = False
-            st.experimental_rerun()
+    except KeyError as e:
+        st.error(f"Error en st.secrets, faltan las siguientes claves: {e}")
+        return None
+    return create_client(SUPABASE_URL, SUPABASE_KEY)
 
 def login_page():
     st.title("Iniciar Sesión")
@@ -67,9 +45,12 @@ def schedule_activity_page():
     st.title("Agendar Actividad")
     fecha = st.date_input("Seleccione la fecha", value=datetime.date.today())
     turno = st.selectbox("Turno", options=["Mañana", "Tarde", "Noche"])
-    supabase = st.session_state.supabase_client
+    supabase = st.session_state.get("supabase_client")
+    if not supabase:
+        st.error("Supabase no está inicializado.")
+        return
 
-    # Obtiene la lista de miembros
+    # Lista de miembros
     member_resp = supabase.table("gym_members").select("*").execute()
     if member_resp.error:
         st.error("Error al obtener los miembros.")
@@ -78,7 +59,7 @@ def schedule_activity_page():
     member_options = {f"{m['nombre']} {m['apellidos']} - {m['nip']}": m["id"] for m in members_data}
     selected_member = st.selectbox("Seleccione Miembro", options=list(member_options.keys()))
 
-    # Obtiene la lista de actividades
+    # Lista de actividades
     act_resp = supabase.table("activities").select("*").execute()
     if act_resp.error:
         st.error("Error al obtener las actividades.")
@@ -111,6 +92,37 @@ def report_page():
             st.plotly_chart(fig)
         if df is not None:
             st.dataframe(df)
+
+def main():
+    st.title("Gestión del Gimnasio")
+    st.write("DEBUG: Contenido de st.secrets", st.secrets)  # Línea temporal para depurar
+    if "logged_in" not in st.session_state:
+        st.session_state.logged_in = False
+
+    if "supabase_client" not in st.session_state:
+        client = init_supabase()
+        if not client:
+            return  # Se mostrará el error
+        st.session_state.supabase_client = client
+
+    if not st.session_state.logged_in:
+        login_page()
+    else:
+        menu = st.sidebar.radio("Navegación", options=[
+            "Registrar Miembro",
+            "Agendar Actividad",
+            "Reportes",
+            "Cerrar Sesión"
+        ])
+        if menu == "Registrar Miembro":
+            register_member_page()
+        elif menu == "Agendar Actividad":
+            schedule_activity_page()
+        elif menu == "Reportes":
+            report_page()
+        elif menu == "Cerrar Sesión":
+            st.session_state.logged_in = False
+            st.experimental_rerun()
 
 if __name__ == '__main__':
     main()
