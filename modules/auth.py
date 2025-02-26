@@ -1,22 +1,19 @@
 import streamlit as st
-from supabase import create_client, Client
+from supabase import create_client
 
 def login_user(username: str, password: str):
     """
-    Valida las credenciales del monitor consultando la tabla "monitors" en Supabase.
+    Valida las credenciales del monitor usando Supabase.
     """
-    # Usa el cliente de Supabase almacenado en session_state
-    supabase: Client = st.session_state.get("supabase_client")
-    if supabase is None:
-        SUPABASE_URL = st.secrets["SUPABASE_URL"]
-        SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
-        supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-        st.session_state.supabase_client = supabase
+    supabase = st.session_state.get("supabase_client")
+    if not supabase:
+        st.error("No se ha inicializado el cliente de Supabase.")
+        return None
 
-    response = supabase.table("monitors") \
-                       .select("*") \
-                       .eq("username", username) \
-                       .eq("password", password) \
+    response = supabase.table("monitors")\
+                       .select("*")\
+                       .eq("username", username)\
+                       .eq("password", password)\
                        .execute()
     if response.data and len(response.data) > 0:
         return response.data[0]
